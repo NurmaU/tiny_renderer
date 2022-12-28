@@ -43,45 +43,6 @@ void line(Vec2i first, Vec2i second, TGAImage& image, const TGAColor& color) {
     }
 }
 
-int draw_face() {
-    int width = 1000;
-    int height = 1000;
-    TGAImage image(width, height, TGAImage::RGB);
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    auto model = std::make_shared<Model>("../data/african_head.obj");
-    std::cout << "NUMBER OF FACES: " << model->nfaces() << std::endl;
-    std::cout << "NUMBER OF VERTICES: " << model->nverts() << std::endl;
-
-    for (int i = 0; i < model->nfaces(); i++) {
-        std::vector<int> face = model->face(i);
-
-        for (int j = 0; j < 3; j++) {
-            Vec3f v0 = model->vert(face[j]);
-            Vec3f v1 = model->vert(face[(j + 1) % 3]);
-
-            int x0 = (v0.x + 1.0) * width / 2.0;
-            int y0 = (v0.y + 1.0) * height / 2.0;
-            int x1 = (v1.x + 1.0) * width / 2.0;
-            int y1 = (v1.y + 1.0) * height / 2.0;
-
-            // line(x0, y0, x1, y1, image, white);
-        }
-    }
-    image.flip_vertically();
-    image.write_tga_file("output.tga");
-
-    auto delta = std::chrono::high_resolution_clock::now() - start;
-
-    std::cout
-        << "Time spent: "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()
-        << " ms" << std::endl;
-
-    return 0;
-}
-
 Vec3f baryCentric(Vec2i* pts, Vec2i P) {
     Vec3f u = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^
               Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
@@ -114,6 +75,43 @@ void triangle(Vec2i* pts, TGAImage& image, TGAColor color) {
 }
 
 int main() {
+    int width = 1000;
+    int height = 1000;
+    TGAImage image(width, height, TGAImage::RGB);
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    auto model = std::make_shared<Model>("../data/african_head.obj");
+    std::cout << "NUMBER OF FACES: " << model->nfaces() << std::endl;
+    std::cout << "NUMBER OF VERTICES: " << model->nverts() << std::endl;
+
+    for (int i = 0; i < model->nfaces(); i++) {
+        std::vector<int> face = model->face(i);
+        Vec2i screen_coords[3];
+
+        for (int j = 0; j < 3; j++) {
+            Vec3f world_coords = model->vert(face[j]);
+            screen_coords[j] = Vec2i((world_coords.x + 1) * width / 2.0,
+                                     (world_coords.y + 1) * height / 2.0);
+        }
+
+        triangle(screen_coords, image,
+                 TGAColor(rand() % 255, rand() % 255, rand() % 255, 255));
+    }
+    image.flip_vertically();
+    image.write_tga_file("output.tga");
+
+    auto delta = std::chrono::high_resolution_clock::now() - start;
+
+    std::cout
+        << "Time spent: "
+        << std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()
+        << " ms" << std::endl;
+
+    return 0;
+}
+
+int demo() {
     Vec2i t0[3] = {Vec2i(10, 70), Vec2i(50, 160), Vec2i(70, 80)};
     Vec2i t1[3] = {Vec2i(180, 50), Vec2i(150, 1), Vec2i(70, 180)};
     Vec2i t2[3] = {Vec2i(180, 150), Vec2i(120, 160), Vec2i(130, 180)};
