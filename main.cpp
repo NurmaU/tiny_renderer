@@ -82,36 +82,34 @@ int draw_face() {
     return 0;
 }
 
-void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage& image, TGAColor color) {
-    if (t0.y > t1.y) std::swap(t0, t1);
-    if (t0.y > t2.y) std::swap(t0, t2);
-    if (t1.y > t2.y) std::swap(t1, t2);
+Vec3f baryCentric(Vec2i* pts, Vec2i P) {
+    Vec3f u = Vec3f(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - P.x) ^
+              Vec3f(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - P.y);
+    if (std::abs(u.z) < 1) return Vec3f(-1, 1, 1);
+    return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+}
 
-    int total_height = t2.y - t0.y;
-    int segment_height = t1.y - t0.y + 1;
-    for (int y = t0.y; y <= t1.y; y++) {
-        float alpha = (float)(y - t0.y) / total_height;
-        float beta = (float)(y - t0.y) / segment_height;
+void triangle(Vec2i* pts, TGAImage& image, TGAColor color) {
+    Vec2i bboxmin(image.get_width() - 1, image.get_height() - 1);
+    Vec2i bboxmax(0, 0);
+    Vec2i clamp(image.get_width() - 1, image.get_height() - 1);
 
-        Vec2i A = t0 + (t2 - t0) * alpha;
-        Vec2i B = t0 + (t1 - t0) * beta;
+    for (int i = 0; i < 3; i++) {
+        bboxmin.x = std::max(0, std::min(bboxmin.x, pts[i].x));
+        bboxmin.y = std::max(0, std::min(bboxmin.y, pts[i].y));
 
-        if (A.x > B.x) std::swap(A, B);
-
-        for (int j = A.x; j <= B.x; j++) image.set(j, y, color);
+        bboxmax.x = std::min(clamp.x, std::max(bboxmax.x, pts[i].x));
+        bboxmax.y = std::min(clamp.y, std::max(bboxmax.y, pts[i].y));
     }
 
-    segment_height = t2.y - t1.y + 1;
-    for (int y = t1.y; y <= t2.y; y++) {
-        float alpha = (float)(y - t0.y) / total_height;
-        float beta = (float)(y - t1.y) / segment_height;
+    Vec2i P;
 
-        Vec2i A = t0 + (t2 - t0) * alpha;
-        Vec2i B = t1 + (t2 - t1) * beta;
-
-        if (A.x > B.x) std::swap(A, B);
-
-        for (int j = A.x; j <= B.x; j++) image.set(j, y, color);
+    for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+        for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+            Vec3f bc_screen = baryCentric(pts, P);
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
+            image.set(P.x, P.y, color);
+        }
     }
 }
 
@@ -124,9 +122,9 @@ int main() {
     int height = 200;
     TGAImage image(width, height, TGAImage::RGB);
 
-    triangle(t0[0], t0[1], t0[2], image, red);
-    triangle(t1[0], t1[1], t1[2], image, white);
-    triangle(t2[0], t2[1], t2[2], image, green);
+    triangle(t0, image, red);
+    triangle(t1, image, white);
+    triangle(t2, image, green);
 
     image.flip_vertically();
     image.write_tga_file("triangles.tga");
