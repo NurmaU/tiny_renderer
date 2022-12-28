@@ -7,11 +7,11 @@ const TGAColor red = TGAColor(255, 0, 0, 255);
 void line(int x0, int y0, int x1, int y1, TGAImage& image,
           const TGAColor& color) {
     bool steep = false;
-    // if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
-    //     std::swap(x0, y0);
-    //     std::swap(x1, y1);
-    //     steep = true;
-    // }
+    if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
+        std::swap(x0, y0);
+        std::swap(x1, y1);
+        steep = true;
+    }
     if (x0 > x1) {
         std::swap(x0, x1);
         std::swap(y0, y1);
