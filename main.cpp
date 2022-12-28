@@ -85,18 +85,26 @@ int main() {
     std::cout << "NUMBER OF FACES: " << model->nfaces() << std::endl;
     std::cout << "NUMBER OF VERTICES: " << model->nverts() << std::endl;
 
+    Vec3f ligth_dir(0, 0, -1);
+
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
         Vec2i screen_coords[3];
-
+        Vec3f world_coords[3];
         for (int j = 0; j < 3; j++) {
-            Vec3f world_coords = model->vert(face[j]);
-            screen_coords[j] = Vec2i((world_coords.x + 1) * width / 2.0,
-                                     (world_coords.y + 1) * height / 2.0);
+            Vec3f v = model->vert(face[j]);
+            screen_coords[j] =
+                Vec2i((v.x + 1) * width / 2.0, (v.y + 1) * height / 2.0);
+            world_coords[j] = v;
         }
-
-        triangle(screen_coords, image,
-                 TGAColor(rand() % 255, rand() % 255, rand() % 255, 255));
+        Vec3f n = (world_coords[2] - world_coords[0]) ^
+                  (world_coords[1] - world_coords[0]);
+        n.normalize();
+        float intensivity = n * ligth_dir;
+        if (intensivity > 0)
+            triangle(screen_coords, image,
+                     TGAColor(intensivity * 255, intensivity * 255,
+                              intensivity * 255, 255));
     }
     image.flip_vertically();
     image.write_tga_file("output.tga");
