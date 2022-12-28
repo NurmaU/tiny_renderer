@@ -1,5 +1,8 @@
 #include <chrono>
 #include <iostream>
+#include <memory>
+
+#include "model.h"
 #include "tgaimage.h"
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
@@ -38,19 +41,35 @@ void line(int x0, int y0, int x1, int y1, TGAImage& image,
 }
 
 int main(int argc, char** argv) {
-    TGAImage image(100, 100, TGAImage::RGB);
+    int width = 1000;
+    int height = 1000;
+    TGAImage image(width, height, TGAImage::RGB);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 1000000; i++) {
-        line(13, 20, 80, 40, image, white);
-        line(20, 13, 40, 80, image, red);
-        line(80, 40, 13, 20, image, red);
-        image.flip_vertically();
+    auto model = std::make_shared<Model>("../data/african_head.obj");
+    std::cout << "NUMBER OF FACES: " << model->nfaces() << std::endl;
+    std::cout << "NUMBER OF VERTICES: " << model->nverts() << std::endl;
+
+    for (int i = 0; i < model->nfaces(); i++) {
+        std::vector<int> face = model->face(i);
+
+        for (int j = 0; j < 3; j++) {
+            Vec3f v0 = model->vert(face[j]);
+            Vec3f v1 = model->vert(face[(j + 1) % 3]);
+
+            int x0 = (v0.x + 1.0) * width / 2.0;
+            int y0 = (v0.y + 1.0) * height / 2.0;
+            int x1 = (v1.x + 1.0) * width / 2.0;
+            int y1 = (v1.y + 1.0) * height / 2.0;
+
+            line(x0, y0, x1, y1, image, white);
+        }
     }
+    image.flip_vertically();
+    image.write_tga_file("output.tga");
 
     auto delta = std::chrono::high_resolution_clock::now() - start;
-    image.write_tga_file("output.tga");
 
     std::cout
         << "Time spent: "
