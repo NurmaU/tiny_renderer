@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "model.h"
@@ -46,14 +47,10 @@ Model::Model(const char* filename, const char* texture_filename) {
             faces_.push_back(f);
             text_indexes_.push_back(ti);
         } else if (!line.compare(0, 2, "vt")) {
-            std::vector<float> coord;
-            iss >> trash;
-            float value;
-
-            for (int i = 0; i < 2; i++) {
-                iss >> value;
-                coord.push_back(value);
-            }
+            float u, v;
+            std::string tmp;
+            iss >> tmp >> u >> v;
+            auto coord = std::make_pair(u, v);
             text_coord_.push_back(coord);
         }
     }
@@ -74,5 +71,19 @@ int Model::ntextcoords() { return (int)text_coord_.size(); }
 int Model::ntextinds() { return (int)text_indexes_.size(); }
 
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
+void Model::get_texture(int idx, TGAColor* colors) {
+    float u, v;
+    int x, y, index;
+
+    for (int i = 0; i < 3; i++) {
+        index = text_indexes_[idx][i];
+        u = text_coord_[index].first;
+        v = text_coord_[index].second;
+
+        x = static_cast<int>(u * texture.get_width());
+        y = static_cast<int>(v * texture.get_height());
+        colors[i] = texture.get(x, y);
+    }
+}
 
 Vec3f Model::vert(int i) { return verts_[i]; }

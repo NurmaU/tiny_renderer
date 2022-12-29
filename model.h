@@ -1,6 +1,7 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
+#include <utility>
 #include <vector>
 #include "geometry.h"
 #include "tgaimage.h"
@@ -10,7 +11,7 @@ class Model {
     std::vector<Vec3f> verts_;
     std::vector<std::vector<int>> faces_;
     std::vector<std::vector<int>> text_indexes_;
-    std::vector<std::vector<float>> text_coord_;
+    std::vector<std::pair<float, float>> text_coord_;
     TGAImage texture;
 
    public:
@@ -22,6 +23,7 @@ class Model {
     int ntextinds();
     Vec3f vert(int i);
     std::vector<int> face(int idx);
+    void get_texture(int idx, TGAColor* colors);
 };
 
 #endif  // __MODEL_H__
