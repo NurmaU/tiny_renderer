@@ -10,6 +10,7 @@
 Model::Model(const char* filename, const char* texture_filename) {
     // read texture
     texture.read_tga_file(texture_filename);
+    texture.flip_vertically();
 
     std::cerr << "TEXTURE IMAGE HEIGHT: " << texture.get_height() << std::endl;
     std::cerr << "TEXTURE IMAGE WIDTH: " << texture.get_width() << std::endl;
@@ -48,9 +49,8 @@ Model::Model(const char* filename, const char* texture_filename) {
             text_indexes_.push_back(ti);
         } else if (!line.compare(0, 2, "vt")) {
             float u, v;
-            std::string tmp;
-            iss >> tmp >> u >> v;
-            auto coord = std::make_pair(u, v);
+            iss >> trash >> trash >> u >> v;
+            std::pair<float, float> coord = std::make_pair(u, v);
             text_coord_.push_back(coord);
         }
     }
@@ -71,7 +71,7 @@ int Model::ntextcoords() { return (int)text_coord_.size(); }
 int Model::ntextinds() { return (int)text_indexes_.size(); }
 
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
-void Model::get_texture(int idx, TGAColor* colors) {
+void Model::get_uvs(int idx, Vec2f* uvs) {
     float u, v;
     int x, y, index;
 
@@ -79,11 +79,14 @@ void Model::get_texture(int idx, TGAColor* colors) {
         index = text_indexes_[idx][i];
         u = text_coord_[index].first;
         v = text_coord_[index].second;
-
-        x = static_cast<int>(u * texture.get_width());
-        y = static_cast<int>(v * texture.get_height());
-        colors[i] = texture.get(x, y);
+        uvs[i] = Vec2f(u, v);
     }
+}
+
+TGAColor Model::get_color(float u, float v) {
+    int x = static_cast<int>(u * texture.get_width());
+    int y = static_cast<int>(v * texture.get_height());
+    return texture.get(x, y);
 }
 
 Vec3f Model::vert(int i) { return verts_[i]; }

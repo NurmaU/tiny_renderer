@@ -55,7 +55,8 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
     return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
 }
 
-void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor colors[3]) {
+void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
+              std::shared_ptr<Model> model) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
@@ -75,10 +76,16 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, TGAColor colors[3]) {
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
 
             P.z = 0;
-            for (int i = 0; i < 3; i++) P.z += pts[i][2] * bc_screen[i];
+            float u = 0, v = 0;
+            for (int i = 0; i < 3; i++) {
+                P.z += pts[i][2] * bc_screen[i];
+                u += uvs[i][0] * bc_screen[i];
+                v += uvs[i][1] * bc_screen[i];
+            }
+            TGAColor color = model->get_color(u, v);
             if (zbuffer[int(P.x + P.y * image.get_width())] < P.z) {
                 zbuffer[int(P.x + P.y * image.get_width())] = P.z;
-                image.set(P.x, P.y, colors[1]);
+                image.set(P.x, P.y, color);
             }
         }
     }
@@ -109,9 +116,9 @@ int main() {
         std::vector<int> face = model->face(i);
         Vec3f pts[3];
         Vec3f world_coords[3];
-        TGAColor colors[3];
+        Vec2f uvs[3];
 
-        model->get_texture(i, colors);
+        model->get_uvs(i, uvs);
 
         for (int j = 0; j < 3; j++) {
             Vec3f v = model->vert(face[j]);
@@ -122,7 +129,7 @@ int main() {
                         (world_coords[1] - world_coords[0]));
         n.normalize();
         float intensivity = n * ligth_dir;
-        if (intensivity > 0) triangle(pts, zbuffer, image, colors);
+        if (intensivity > 0) triangle(pts, zbuffer, image, uvs, model);
     }
     image.flip_vertically();
     image.write_tga_file("output.tga");

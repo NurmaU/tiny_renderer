@@ -23,7 +23,8 @@ class Model {
     int ntextinds();
     Vec3f vert(int i);
     std::vector<int> face(int idx);
-    void get_texture(int idx, TGAColor* colors);
+    void get_uvs(int idx, Vec2f* colors);
+    TGAColor get_color(float u, float v);
 };
 
 #endif  // __MODEL_H__
