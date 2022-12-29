@@ -42,6 +42,7 @@ Model::Model(const char* filename, const char* texture_filename) {
             iss >> trash;
             while (iss >> idx >> trash >> text_idx >> trash >> itrash) {
                 idx--;
+                text_idx--;
                 f.push_back(idx);
                 ti.push_back(text_idx);
             }
