@@ -97,9 +97,8 @@ int main() {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    auto model = std::make_shared<Model>("../data/african_head.obj");
-    std::cout << "NUMBER OF FACES: " << model->nfaces() << std::endl;
-    std::cout << "NUMBER OF VERTICES: " << model->nverts() << std::endl;
+    auto model = std::make_shared<Model>("../data/african_head.obj",
+                                         "../data/african_head_diffuse.tga");
 
     Vec3f ligth_dir(0, 0, -1);
     float* zbuffer = new float[width * height];
