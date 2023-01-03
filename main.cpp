@@ -102,15 +102,12 @@ Vec3f makeProjection(Vec3f& pts, float c_value) {
     mat[3][2] = -1.0 / c_value;
 
     Vec4f homo_v;
-    for (int i = 0; i < 1; i++) {
-        homo_v[0] = pts[0];
-        homo_v[1] = pts[1];
-        homo_v[2] = pts[2];
-        homo_v[3] = 1;
-        homo_v = mat * homo_v;
-        pts = {homo_v[0] / homo_v[3], homo_v[1] / homo_v[3],
-               homo_v[2] / homo_v[3]};
-    }
+    homo_v[0] = pts[0];
+    homo_v[1] = pts[1];
+    homo_v[2] = pts[2];
+    homo_v[3] = 1;
+    homo_v = mat * homo_v;
+    pts = {homo_v[0] / homo_v[3], homo_v[1] / homo_v[3], homo_v[2] / homo_v[3]};
 }
 
 int main() {
