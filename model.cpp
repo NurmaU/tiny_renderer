@@ -53,12 +53,18 @@ Model::Model(const char* filename, const char* texture_filename) {
             iss >> trash >> trash >> u >> v;
             std::pair<float, float> coord = std::make_pair(u, v);
             text_coord_.push_back(coord);
+        } else if (!line.compare(0, 2, "vn")) {
+            Vec3f vn;
+            iss >> trash;
+            for (int i = 0; i < 3; i++) iss >> vn[i];
+            vns_.push_back(vn);
         }
     }
     std::cerr << "NUMBER OF FACES: " << nfaces() << std::endl;
     std::cerr << "NUMBER OF VERTICES: " << nverts() << std::endl;
     std::cerr << "NUMBER OF TEXTURE COORDS: " << ntextcoords() << std::endl;
     std::cerr << "NUMBER OF TEXTURE INDEXES: " << ntextinds() << std::endl;
+    std::cerr << "NUMBER OF NORMALS: " << nnormals() << std::endl;
 }
 
 Model::~Model() {}
@@ -70,6 +76,7 @@ int Model::nfaces() { return (int)faces_.size(); }
 int Model::ntextcoords() { return (int)text_coord_.size(); }
 
 int Model::ntextinds() { return (int)text_indexes_.size(); }
+int Model::nnormals() { return (int)vns_.size(); }
 
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
 void Model::get_uvs(int idx, Vec2f* uvs) {

@@ -12,6 +12,7 @@ class Model {
     std::vector<std::vector<int>> faces_;
     std::vector<std::vector<int>> text_indexes_;
     std::vector<std::pair<float, float>> text_coord_;
+    std::vector<Vec3f> vns_;
     TGAImage texture;
 
    public:
@@ -21,6 +22,7 @@ class Model {
     int nfaces();
     int ntextcoords();
     int ntextinds();
+    int nnormals();
     Vec3f vert(int i);
     std::vector<int> face(int idx);
     void get_uvs(int idx, Vec2f* colors);

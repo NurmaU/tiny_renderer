@@ -57,7 +57,7 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
 }
 
 void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
-              std::shared_ptr<Model> model) {
+              std::shared_ptr<Model> model, TGAColor color) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
@@ -83,7 +83,7 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
                 u += uvs[i][0] * bc_screen[i];
                 v += uvs[i][1] * bc_screen[i];
             }
-            TGAColor color = model->get_color(u, v);
+            // TGAColor color = model->get_color(u, v);
             if (zbuffer[int(P.x + P.y * image.get_width())] < P.z) {
                 zbuffer[int(P.x + P.y * image.get_width())] = P.z;
                 image.set(P.x, P.y, color);
@@ -144,7 +144,12 @@ int main() {
                         (world_coords[1] - world_coords[0]));
         n.normalize();
         float intensivity = n * ligth_dir;
-        if (intensivity > 0) triangle(pts, zbuffer, image, uvs, model);
+        if (intensivity > 0) {
+            intensivity *= 0.8;
+            auto color = TGAColor(255 * intensivity, 255 * intensivity,
+                                  255 * intensivity, 255);
+            triangle(pts, zbuffer, image, uvs, model, color);
+        }
     }
     image.flip_vertically();
     image.write_tga_file("output.tga");
