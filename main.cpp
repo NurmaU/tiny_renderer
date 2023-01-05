@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 
+#include "geometry.h"
 #include "model.h"
 #include "tgaimage.h"
 
@@ -9,7 +10,11 @@ const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 const float c_value = 5;
+const int depth = 255;
 
+void print(std::string text, float value) {
+    std::cerr << text << " " << value << std::endl;
+}
 void line(Vec2i first, Vec2i second, TGAImage& image, const TGAColor& color) {
     int x0 = first.x, y0 = first.y;
     int x1 = second.x, y1 = second.y;
@@ -51,13 +56,13 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
         s[i][1] = B[i] - A[i];
         s[i][2] = A[i] - P[i];
     }
-    Vec3f u = cross(s[0], s[1]);
+    Vec3f u = s[0] ^ s[1];
     if (std::abs(u[2]) < 1e-2) return Vec3f(-1, 1, 1);
     return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
 }
 
 void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
-              std::shared_ptr<Model> model, TGAColor color) {
+              std::shared_ptr<Model> model, float* intensity) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
@@ -77,13 +82,16 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
 
             P.z = 0;
-            float u = 0, v = 0;
+            float u = 0, v = 0, total_intensity = 0;
             for (int i = 0; i < 3; i++) {
                 P.z += pts[i][2] * bc_screen[i];
                 u += uvs[i][0] * bc_screen[i];
                 v += uvs[i][1] * bc_screen[i];
+                total_intensity += intensity[i] * bc_screen[i];
             }
             // TGAColor color = model->get_color(u, v);
+            TGAColor color(255, 255, 255);
+            color = color * total_intensity;
             if (zbuffer[int(P.x + P.y * image.get_width())] < P.z) {
                 zbuffer[int(P.x + P.y * image.get_width())] = P.z;
                 image.set(P.x, P.y, color);
@@ -92,22 +100,32 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
     }
 }
 
-Vec3f world2screen(Vec3f v, int width, int height) {
-    return Vec3f(int((v.x + 1.) * width / 2. + .5),
-                 int((v.y + 1.) * height / 2. + .5), v.z);
+Matrix lookat(Vec3f eye, Vec3f center, Vec3f up) {
+    Vec3f z = (eye - center).normalize();
+    Vec3f x = (up ^ z).normalize();
+    Vec3f y = (z ^ x).normalize();
+
+    Matrix retval = Matrix::identity(4);
+
+    for (int i = 0; i < 3; i++) {
+        retval[0][i] = x[i];
+        retval[1][i] = y[i];
+        retval[2][i] = z[i];
+        retval[i][3] = -center[i];
+    }
+    return retval;
 }
 
-Vec3f makeProjection(Vec3f& pts, float c_value) {
-    Matrix mat = Matrix::identity();
-    mat[3][2] = -1.0 / c_value;
+Matrix getViewport(int x, int y, int w, int h) {
+    Matrix m = Matrix::identity(4);
+    m[0][3] = x + w / 2.f;
+    m[1][3] = y + h / 2.f;
+    m[2][3] = depth / 2.f;
 
-    Vec4f homo_v;
-    homo_v[0] = pts[0];
-    homo_v[1] = pts[1];
-    homo_v[2] = pts[2];
-    homo_v[3] = 1;
-    homo_v = mat * homo_v;
-    pts = {homo_v[0] / homo_v[3], homo_v[1] / homo_v[3], homo_v[2] / homo_v[3]};
+    m[0][0] = w / 2.f;
+    m[1][1] = h / 2.f;
+    m[2][2] = depth / 2.f;
+    return m;
 }
 
 int main() {
@@ -120,36 +138,41 @@ int main() {
     auto model = std::make_shared<Model>("../data/african_head.obj",
                                          "../data/african_head_diffuse.tga");
 
-    Vec3f ligth_dir(0, 0, -1);
     float* zbuffer = new float[width * height];
     for (int i = width * height; i--;
-         zbuffer[i] = -std::numeric_limits<float>::max())
+         zbuffer[i] = std::numeric_limits<float>::min())
         ;
+    std::cerr << "ZBUFFER: " << zbuffer[0]
+              << std::endl;  // -3.40282e+38 -- 1.17549e-38
 
+    Matrix ModelView = lookat(Vec3f(1, 1, 3), Vec3f(0, 0, 0), Vec3f(0, 1, 0));
+    Matrix Projection = Matrix::identity(4);
+    Matrix ViewPort = getViewport(0, 0, width, height);
+    //    Matrix Projection = Matrix::identity(4);
+    //    Projection[3][2] = -1.0 / c_value;
+
+    std::cerr << ModelView << std::endl;
+    std::cerr << Projection << std::endl;
+    std::cerr << ViewPort << std::endl;
+
+    Matrix Z = ViewPort * Projection * ModelView;
+    std::cerr << Z << std::endl;
+
+    Vec3f light_dir = Vec3f(1, -1, 1).normalize();
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
+        float intensivity[3];
         Vec3f pts[3];
-        Vec3f world_coords[3];
         Vec2f uvs[3];
 
         model->get_uvs(i, uvs);
-
         for (int j = 0; j < 3; j++) {
             Vec3f v = model->vert(face[j]);
-            makeProjection(v, c_value);
-            world_coords[j] = v;
-            pts[j] = world2screen(v, width, height);
+            pts[j] = Vec3i(Vec3f(Z * Matrix(v)));
+            intensivity[j] = model->get_normal(i, j) * light_dir;
         }
-        Vec3f n = cross((world_coords[2] - world_coords[0]),
-                        (world_coords[1] - world_coords[0]));
-        n.normalize();
-        float intensivity = n * ligth_dir;
-        if (intensivity > 0) {
-            intensivity *= 0.8;
-            auto color = TGAColor(255 * intensivity, 255 * intensivity,
-                                  255 * intensivity, 255);
-            triangle(pts, zbuffer, image, uvs, model, color);
-        }
+
+        triangle(pts, zbuffer, image, uvs, model, intensivity);
     }
     image.flip_vertically();
     image.write_tga_file("output.tga");
@@ -162,23 +185,4 @@ int main() {
         << " ms" << std::endl;
 
     return 0;
-}
-
-int demo() {
-    Vec2i t0[3] = {Vec2i(10, 70), Vec2i(50, 160), Vec2i(70, 80)};
-    Vec2i t1[3] = {Vec2i(180, 50), Vec2i(150, 1), Vec2i(70, 180)};
-    Vec2i t2[3] = {Vec2i(180, 150), Vec2i(120, 160), Vec2i(130, 180)};
-
-    int width = 200;
-    int height = 200;
-    TGAImage image(width, height, TGAImage::RGB);
-
-    // triangle(t0, image, red);
-    // triangle(t1, image, white);
-    // triangle(t2, image, green);
-
-    image.flip_vertically();
-    image.write_tga_file("triangles.tga");
-
-    return 1;
 }
