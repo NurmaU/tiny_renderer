@@ -57,12 +57,12 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
         s[i][2] = A[i] - P[i];
     }
     Vec3f u = s[0] ^ s[1];
-    if (std::abs(u[2]) < 1e-2) return Vec3f(-1, 1, 1);
-    return Vec3f(1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
+    if (std::abs(u[2]) < 1e-2) return {-1, 1, 1};
+    return {1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
 }
 
 void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
-              std::shared_ptr<Model> model, float* intensity) {
+              std::shared_ptr<Model> model, const float* intensity) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
@@ -138,12 +138,9 @@ int main() {
     auto model = std::make_shared<Model>("../data/african_head.obj",
                                          "../data/african_head_diffuse.tga");
 
-    float* zbuffer = new float[width * height];
-    for (int i = width * height; i--;
-         zbuffer[i] = std::numeric_limits<float>::min())
-        ;
-    std::cerr << "ZBUFFER: " << zbuffer[0]
-              << std::endl;  // -3.40282e+38 -- 1.17549e-38
+    auto* zbuffer = new float[width * height];
+    for (int i = 0; i < width * height; i++)
+        zbuffer[i] = std::numeric_limits<float>::min();
 
     Matrix ModelView = lookat(Vec3f(1, 1, 3), Vec3f(0, 0, 0), Vec3f(0, 1, 0));
     Matrix Projection = Matrix::identity(4);
@@ -151,12 +148,11 @@ int main() {
     //    Matrix Projection = Matrix::identity(4);
     //    Projection[3][2] = -1.0 / c_value;
 
-    std::cerr << ModelView << std::endl;
-    std::cerr << Projection << std::endl;
-    std::cerr << ViewPort << std::endl;
+    //    std::cerr << ModelView << std::endl;
+    //    std::cerr << Projection << std::endl;
+    //    std::cerr << ViewPort << std::endl;
 
     Matrix Z = ViewPort * Projection * ModelView;
-    std::cerr << Z << std::endl;
 
     Vec3f light_dir = Vec3f(1, -1, 1).normalize();
     for (int i = 0; i < model->nfaces(); i++) {
