@@ -121,3 +121,20 @@ std::ostream& operator<<(std::ostream& s, Matrix& m) {
     }
     return s;
 }
+
+void Matrix::set_col(int col, Vec2f v) {
+    for (int i = 0; i < rows; i++) {
+        m[i][col] = v[i];
+    }
+}
+
+Vec2f Matrix::operator*(Vec3f v) const {
+    Vec2f retval(0, 0);
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 3; j++) {
+            retval[i] += m[i][j] * v[j];
+        }
+    }
+
+    return retval;
+}

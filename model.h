@@ -24,7 +24,7 @@ class Model {
     int nnormals();
     Vec3f vert(int i, int j);
     std::vector<int> face(int idx);
-    void get_uvs(int idx, Vec2f* colors);
+    Vec2f get_uvs(int iface, int nthvert);
     TGAColor get_color(float u, float v);
     Vec3f get_normal(int iface, int nvert);
 };

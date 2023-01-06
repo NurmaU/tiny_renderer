@@ -91,8 +91,10 @@ class Matrix {
     static Matrix identity(int dimensions);
     std::vector<float>& operator[](const int i);
     Matrix operator*(const Matrix& a);
+    Vec2f operator*(Vec3f v) const;
     Matrix transpose();
     Matrix inverse();
+    void set_col(int col, Vec2f v);
     friend std::ostream& operator<<(std::ostream& s, Matrix& m);
 };
 

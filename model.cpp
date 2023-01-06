@@ -82,17 +82,9 @@ std::vector<int> Model::face(int iface) {
 
     return retval;
 }
-void Model::get_uvs(int iface, Vec2f* uvs) {
-    float u, v;
-    int index;
-    auto face = faces_[iface];
-
-    for (int i = 0; i < 3; i++) {
-        index = face[i][1];
-        u = text_coord_[index].first;
-        v = text_coord_[index].second;
-        uvs[i] = Vec2f(u, v);
-    }
+Vec2f Model::get_uvs(int iface, int nthvert) {
+    int index = faces_[iface][nthvert][1];
+    return {text_coord_[index].first, text_coord_[index].second};
 }
 
 TGAColor Model::get_color(float u, float v) {
