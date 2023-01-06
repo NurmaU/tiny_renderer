@@ -4,9 +4,9 @@
 #include "geometry.h"
 #include "tgaimage.h"
 
-extern Matrix ModelView;
-extern Matrix Viewport;
-extern Matrix Projection;
+// extern Matrix ModelView;
+// extern Matrix Viewport;
+// extern Matrix Projection;
 
 Matrix viewport(int x, int y, int w, int h);
 Matrix projection(float coeff = 0.f);
