@@ -48,7 +48,7 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image,
                 //                total_intensity += intensity[i] *
                 //                bc_screen[i];
             }
-            // TGAColor color = model->get_color(u, v);
+            // TGAColor color = model->diffuse(u, v);
             TGAColor color;
             bool discard = shader.fragment(bc_screen, color);
             int index = int(P.x + P.y * image.get_width());

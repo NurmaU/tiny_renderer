@@ -7,13 +7,22 @@
 #include <utility>
 #include <vector>
 
-Model::Model(const char* filename, const char* texture_filename) {
+Model::Model(const char* filename, const char* texture_filename,
+             const char* norm_filename) {
     // read texture
     texture.read_tga_file(texture_filename);
     texture.flip_vertically();
 
+    // read normal mapping
+    norm_map.read_tga_file(norm_filename);
+    norm_map.flip_vertically();
+
     std::cerr << "TEXTURE IMAGE HEIGHT: " << texture.get_height() << std::endl;
     std::cerr << "TEXTURE IMAGE WIDTH: " << texture.get_width() << std::endl;
+
+    std::cerr << "NORMAL MAPPING HEIGHT: " << norm_map.get_height()
+              << std::endl;
+    std::cerr << "NORMAL MAPPING WIDTH: " << norm_map.get_width() << std::endl;
 
     // read points
     std::ifstream file;
@@ -87,9 +96,9 @@ Vec2f Model::get_uvs(int iface, int nthvert) {
     return {text_coord_[index].first, text_coord_[index].second};
 }
 
-TGAColor Model::get_color(float u, float v) {
-    int x = static_cast<int>(u * texture.get_width());
-    int y = static_cast<int>(v * texture.get_height());
+TGAColor Model::diffuse(Vec2f uv) {
+    int x = static_cast<int>(uv[0] * texture.get_width());
+    int y = static_cast<int>(uv[1] * texture.get_height());
     return texture.get(x, y);
 }
 
@@ -97,4 +106,18 @@ Vec3f Model::vert(int i, int j) { return verts_[faces_[i][j][0]]; }
 Vec3f Model::get_normal(int iface, int nvert) {
     int index = faces_[iface][nvert][2];
     return vns_[index].normalize();
+}
+
+Vec3f Model::get_normmap(Vec2f uv) {
+    int x = static_cast<int>(uv[0] * norm_map.get_width());
+    int y = static_cast<int>(uv[1] * norm_map.get_height());
+    auto c = norm_map.get(x, y);
+
+    Vec3f c_vec = {float(c.bgra[0]), float(c.bgra[1]), float(c.bgra[2])};
+
+    Vec3f retval;
+    for (int i = 0; i < 3; i++) {
+        retval[2 - i] = c_vec[i] / 255 * 2 - 1;
+    }
+    return retval;
 }

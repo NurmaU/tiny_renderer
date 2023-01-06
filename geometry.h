@@ -90,7 +90,7 @@ class Matrix {
     int ncols();
     static Matrix identity(int dimensions);
     std::vector<float>& operator[](const int i);
-    Matrix operator*(const Matrix& a);
+    Matrix operator*(const Matrix& a) const;
     Vec2f operator*(Vec3f v) const;
     Matrix transpose();
     Matrix inverse();

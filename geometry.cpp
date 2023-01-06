@@ -52,7 +52,7 @@ std::vector<float>& Matrix::operator[](const int i) {
     return m[i];
 }
 
-Matrix Matrix::operator*(const Matrix& a) {
+Matrix Matrix::operator*(const Matrix& a) const {
     assert(cols == a.rows);
     Matrix result(rows, a.cols);
     for (int i = 0; i < rows; i++) {
