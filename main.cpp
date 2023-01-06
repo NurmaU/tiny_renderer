@@ -13,7 +13,7 @@ Matrix Viewport;
 Matrix Projection;
 Model* model = NULL;
 
-Vec3f light_dir = Vec3f(1, -1, 1);
+Vec3f light_dir = Vec3f(1, 1, 1);
 Vec3f eye = Vec3f(1, 1, 3);
 Vec3f center = Vec3f(0, 0, 0);
 Vec3f up = Vec3f(0, 1, 0);

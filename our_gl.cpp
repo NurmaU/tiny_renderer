@@ -49,10 +49,11 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image,
                 //                bc_screen[i];
             }
             // TGAColor color = model->get_color(u, v);
-            TGAColor color(255, 255, 255);
-            shader.fragment(bc_screen, color);
-            if (zbuffer[int(P.x + P.y * image.get_width())] < P.z) {
-                zbuffer[int(P.x + P.y * image.get_width())] = P.z;
+            TGAColor color;
+            bool discard = shader.fragment(bc_screen, color);
+            int index = int(P.x + P.y * image.get_width());
+            if (zbuffer[index] < P.z) {
+                zbuffer[index] = P.z;
                 image.set(P.x, P.y, color);
             }
         }
