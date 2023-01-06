@@ -101,7 +101,7 @@ TGAColor Model::get_color(float u, float v) {
     return texture.get(x, y);
 }
 
-Vec3f Model::vert(int i) { return verts_[i]; }
+Vec3f Model::vert(int i, int j) { return verts_[faces_[i][j][0]]; }
 Vec3f Model::get_normal(int iface, int nvert) {
     int index = faces_[iface][nvert][2];
     return vns_[index].normalize();

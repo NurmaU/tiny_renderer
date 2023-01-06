@@ -1,7 +1,8 @@
+#include "our_gl.h"
+
 #include <memory>
 
 #include "geometry.h"
-#include "model.h"
 #include "tgaimage.h"
 
 const int depth = 255;
@@ -18,8 +19,8 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
     return {1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
 }
 
-void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
-              std::shared_ptr<Model> model, const float* intensity) {
+void triangle(Vec3f* pts, float* zbuffer, TGAImage& image,
+              const float* intensity) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
@@ -42,8 +43,8 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
             float u = 0, v = 0, total_intensity = 0;
             for (int i = 0; i < 3; i++) {
                 P.z += pts[i][2] * bc_screen[i];
-                u += uvs[i][0] * bc_screen[i];
-                v += uvs[i][1] * bc_screen[i];
+                //                u += uvs[i][0] * bc_screen[i];
+                //                v += uvs[i][1] * bc_screen[i];
                 total_intensity += intensity[i] * bc_screen[i];
             }
             // TGAColor color = model->get_color(u, v);
@@ -57,30 +58,33 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, Vec2f uvs[3],
     }
 }
 
-Matrix lookat(Vec3f eye, Vec3f center, Vec3f up) {
+void lookat(Vec3f eye, Vec3f center, Vec3f up) {
     Vec3f z = (eye - center).normalize();
     Vec3f x = (up ^ z).normalize();
     Vec3f y = (z ^ x).normalize();
 
-    Matrix retval = Matrix::identity(4);
+    ModelView = Matrix::identity(4);
 
     for (int i = 0; i < 3; i++) {
-        retval[0][i] = x[i];
-        retval[1][i] = y[i];
-        retval[2][i] = z[i];
-        retval[i][3] = -center[i];
+        ModelView[0][i] = x[i];
+        ModelView[1][i] = y[i];
+        ModelView[2][i] = z[i];
+        ModelView[i][3] = -center[i];
     }
-    return retval;
 }
 
-Matrix viewport(int x, int y, int w, int h) {
-    Matrix m = Matrix::identity(4);
-    m[0][3] = x + w / 2.f;
-    m[1][3] = y + h / 2.f;
-    m[2][3] = depth / 2.f;
+void viewport(int x, int y, int w, int h) {
+    Viewport = Matrix::identity(4);
+    Viewport[0][3] = x + w / 2.f;
+    Viewport[1][3] = y + h / 2.f;
+    Viewport[2][3] = depth / 2.f;
 
-    m[0][0] = w / 2.f;
-    m[1][1] = h / 2.f;
-    m[2][2] = depth / 2.f;
-    return m;
+    Viewport[0][0] = w / 2.f;
+    Viewport[1][1] = h / 2.f;
+    Viewport[2][2] = depth / 2.f;
+}
+
+void projection(float coeff) {
+    Projection = Matrix::identity(4);
+    Projection[3][2] = coeff;
 }

@@ -22,7 +22,7 @@ class Model {
     int nfaces();
     int ntextcoords();
     int nnormals();
-    Vec3f vert(int i);
+    Vec3f vert(int i, int j);
     std::vector<int> face(int idx);
     void get_uvs(int idx, Vec2f* colors);
     TGAColor get_color(float u, float v);
