@@ -18,7 +18,6 @@ Vec3f light_dir = Vec3f(1, 1, 1);
 Vec3f eye = Vec3f(1, 1, 3);
 Vec3f center = Vec3f(0, 0, 0);
 Vec3f up = Vec3f(0, 1, 0);
-const float coeff = 1.f / 10.f;
 
 class GouraudShader : public IShader {
    public:
@@ -65,8 +64,9 @@ int main() {
                       "../data/african_head_nm.tga");
     // Matrices
     lookat(eye, center, up);
+    float coeff = -1.f / (eye - center).norm();
     projection(coeff);
-    viewport(0, 0, width, height);
+    viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
 
     // Z-buffer
     auto* zbuffer = new float[width * height];
