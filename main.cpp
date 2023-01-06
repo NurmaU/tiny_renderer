@@ -18,7 +18,7 @@ Vec3f light_dir = Vec3f(1, 1, 1);
 Vec3f eye = Vec3f(1, 1, 3);
 Vec3f center = Vec3f(0, 0, 0);
 Vec3f up = Vec3f(0, 1, 0);
-const float coeff = 1.f / 5.f;
+const float coeff = 1.f / 10.f;
 
 class GouraudShader : public IShader {
    public:
