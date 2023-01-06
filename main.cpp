@@ -20,7 +20,7 @@ Vec3f up = Vec3f(0, 1, 0);
 
 class GouraudShader : public IShader {
    public:
-    float intensity[3];
+    Vec3f intensity;
 
    public:
     virtual Vec3i vertex(int iface, int nthvert) {
@@ -29,6 +29,11 @@ class GouraudShader : public IShader {
         Vec3f v = model->vert(iface, nthvert);
 
         return Vec3i(Vec3f(Viewport * Projection * ModelView * Matrix(v)));
+    }
+    virtual bool fragment(Vec3f bar, TGAColor& color) const {
+        float total_intensity = bar * intensity;
+        color = TGAColor(255, 255, 255) * total_intensity;
+        return false;
     }
 };
 
@@ -61,7 +66,7 @@ int main() {
         for (int j = 0; j < 3; j++) {
             pts[j] = shader.vertex(i, j);
         }
-        triangle(pts, zbuffer, image, shader.intensity);
+        triangle(pts, zbuffer, image, shader);
     }
 
     image.flip_vertically();

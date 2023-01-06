@@ -13,10 +13,12 @@ void projection(float coeff = 0.f);
 void lookat(Vec3f eye, Vec3f center, Vec3f up);
 
 class IShader {
+   public:
     virtual Vec3i vertex(int iface, int nthvert) = 0;
+    virtual bool fragment(Vec3f bar, TGAColor &color) const = 0;
 };
 
 void triangle(Vec3f *pts, float *zbuffer, TGAImage &image,
-              const float *intensity);
+              const IShader &shader);
 
 #endif  // __OUR_GL_H__

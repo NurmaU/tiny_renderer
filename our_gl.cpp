@@ -20,7 +20,7 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
 }
 
 void triangle(Vec3f* pts, float* zbuffer, TGAImage& image,
-              const float* intensity) {
+              const IShader& shader) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);
@@ -45,11 +45,12 @@ void triangle(Vec3f* pts, float* zbuffer, TGAImage& image,
                 P.z += pts[i][2] * bc_screen[i];
                 //                u += uvs[i][0] * bc_screen[i];
                 //                v += uvs[i][1] * bc_screen[i];
-                total_intensity += intensity[i] * bc_screen[i];
+                //                total_intensity += intensity[i] *
+                //                bc_screen[i];
             }
             // TGAColor color = model->get_color(u, v);
             TGAColor color(255, 255, 255);
-            color = color * total_intensity;
+            shader.fragment(bc_screen, color);
             if (zbuffer[int(P.x + P.y * image.get_width())] < P.z) {
                 zbuffer[int(P.x + P.y * image.get_width())] = P.z;
                 image.set(P.x, P.y, color);
