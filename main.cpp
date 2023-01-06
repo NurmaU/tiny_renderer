@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <memory>
 
@@ -47,8 +48,17 @@ class GouraudShader : public IShader {
         Vec3f l = Vec3f(M * Matrix(light_dir));
         l.normalize();
 
-        float total_intensity = std::max(0.f, n * l);
-        color = model->diffuse(uv) * total_intensity;
+        Vec3f r = n * (n * l) * 2 - l;
+        r.normalize();
+
+        float spec = std::pow(std::max(r.z, 0.f), model->get_specular(uv));
+        float diff = std::max(0.f, n * l);
+
+        color = model->diffuse(uv);
+        for (int i = 0; i < 3; i++) {
+            color[i] =
+                std::min<float>(255, 5.f + color[i] * (diff + 0.6 * spec));
+        }
         return false;
     }
 };
@@ -59,9 +69,9 @@ int main() {
     TGAImage image(width, height, TGAImage::RGB);
 
     // Model
-    model = new Model("../data/african_head.obj",
-                      "../data/african_head_diffuse.tga",
-                      "../data/african_head_nm.tga");
+    model = new Model(
+        "../data/african_head.obj", "../data/african_head_diffuse.tga",
+        "../data/african_head_nm.tga", "../data/african_head_spec.tga");
     // Matrices
     lookat(eye, center, up);
     float coeff = -1.f / (eye - center).norm();

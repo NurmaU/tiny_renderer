@@ -15,10 +15,11 @@ class Model {
     std::vector<Vec3f> vns_;
     TGAImage texture;
     TGAImage norm_map;
+    TGAImage specular;
 
    public:
     Model(const char* filename, const char* texture_filename,
-          const char* norm_filename);
+          const char* norm_filename, const char* spec_filename);
     ~Model();
     int nverts();
     int nfaces();
@@ -30,6 +31,7 @@ class Model {
     TGAColor diffuse(Vec2f uv);
     Vec3f get_normal(int iface, int nvert);
     Vec3f get_normmap(Vec2f uv);
+    float get_specular(Vec2f uv);
 };
 
 #endif  // __MODEL_H__

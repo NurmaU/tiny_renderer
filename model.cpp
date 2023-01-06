@@ -8,7 +8,7 @@
 #include <vector>
 
 Model::Model(const char* filename, const char* texture_filename,
-             const char* norm_filename) {
+             const char* norm_filename, const char* spec_filename) {
     // read texture
     texture.read_tga_file(texture_filename);
     texture.flip_vertically();
@@ -16,6 +16,10 @@ Model::Model(const char* filename, const char* texture_filename,
     // read normal mapping
     norm_map.read_tga_file(norm_filename);
     norm_map.flip_vertically();
+
+    // read spec
+    specular.read_tga_file(spec_filename);
+    specular.flip_vertically();
 
     std::cerr << "TEXTURE IMAGE HEIGHT: " << texture.get_height() << std::endl;
     std::cerr << "TEXTURE IMAGE WIDTH: " << texture.get_width() << std::endl;
@@ -120,4 +124,10 @@ Vec3f Model::get_normmap(Vec2f uv) {
         retval[2 - i] = c_vec[i] / 255 * 2 - 1;
     }
     return retval;
+}
+
+float Model::get_specular(Vec2f uv) {
+    int x = static_cast<int>(uv[0] * specular.get_width());
+    int y = static_cast<int>(uv[1] * specular.get_height());
+    return specular.get(x, y)[0];
 }
