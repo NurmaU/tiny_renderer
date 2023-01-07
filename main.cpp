@@ -3,8 +3,9 @@
 #include <iostream>
 #include <memory>
 
+#include "depth_shader.h"
 #include "geometry.h"
-#include "gourad_shader.h"
+// #include "gourad_shader.h"
 #include "model.h"
 #include "our_gl.h"
 
@@ -44,9 +45,10 @@ int main() {
     light_dir.normalize();
 
     // Shader
-    GouraudShader shader;
-    shader.M = Projection * ModelView;
-    shader.MIT = shader.M.inverse().transpose();
+    DepthShader shader;
+    //    GouraudShader shader;
+    //    shader.M = Projection * ModelView;
+    //    shader.MIT = shader.M.inverse().transpose();
 
     // Process
     for (int i = 0; i < model->nfaces(); i++) {

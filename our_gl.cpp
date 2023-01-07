@@ -19,8 +19,7 @@ Vec3f baryCentric(Vec3f A, Vec3f B, Vec3f C, Vec3f P) {
     return {1.f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z};
 }
 
-void triangle(Vec3f* pts, float* zbuffer, TGAImage& image,
-              const IShader& shader) {
+void triangle(Vec3f* pts, float* zbuffer, TGAImage& image, IShader& shader) {
     Vec2f bboxmin(image.get_width() - 1, image.get_height() - 1);
     Vec2f bboxmax(0, 0);
     Vec2f clamp(image.get_width() - 1, image.get_height() - 1);

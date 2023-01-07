@@ -27,7 +27,7 @@ class GouraudShader : public IShader {
         UV.set_col(nthvert, Matrix({uv[0], uv[1], 1}, 3));
         return Vec3f(Viewport * Projection * ModelView * Matrix(v, 4));
     }
-    virtual bool fragment(Vec3f bar, TGAColor& color) const {
+    virtual bool fragment(Vec3f bar, TGAColor& color) {
         // float total_intensity = bar * intensity;
         // color = TGAColor(255, 255, 255) * total_intensity;
         Matrix uv_bar = UV * Matrix(bar, 3);  // size (2, 1)
