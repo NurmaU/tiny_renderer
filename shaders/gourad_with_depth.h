@@ -43,7 +43,7 @@ class GouraudWithDepthShader : public IShader {
         Vec3f sb_p = MS * Matrix(p, 4);
         int idx = int(sb_p[0]) + int(sb_p[1]) * width;
 
-        float shadow = .3 + .7 * (shadow_buffer[idx] < sb_p[2] + 43.34);
+        float shadow = .3 + .7 * (shadow_buffer[idx] < (sb_p[2] + 1));
         Matrix uv_bar = UV * Matrix(bar, 3);  // size (2, 1)
         Vec2f uv(uv_bar[0][0], uv_bar[1][0]);
 
@@ -63,7 +63,7 @@ class GouraudWithDepthShader : public IShader {
         color = model->diffuse(uv);
         for (int i = 0; i < 3; i++) {
             color[i] = std::min<float>(
-                255, 20.f + color[i] * shadow * (1.2 * diff + 0.6 * spec));
+                255, 1.f + color[i] * shadow * (1.2 * diff + 0.6 * spec));
         }
         return false;
     }
