@@ -5,8 +5,8 @@
 #ifndef TINYRENDERER_DEPTH_SHADER_H
 #define TINYRENDERER_DEPTH_SHADER_H
 
-#include "model.h"
-#include "our_gl.h"
+#include "../model.h"
+#include "../our_gl.h"
 
 extern Model* model;
 

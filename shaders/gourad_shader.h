@@ -5,8 +5,8 @@
 #ifndef TINYRENDERER_GOURAD_SHADER_H
 #define TINYRENDERER_GOURAD_SHADER_H
 
-#include "model.h"
-#include "our_gl.h"
+#include "../model.h"
+#include "../our_gl.h"
 
 extern Model* model;
 extern Vec3f light_dir;
