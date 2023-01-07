@@ -24,19 +24,20 @@ class GouraudShader : public IShader {
         intensity[nthvert] = std::max(0.f, intensity[nthvert]);
         Vec3f v = model->vert(iface, nthvert);
         Vec2f uv = model->get_uvs(iface, nthvert);
-        UV.set_col(nthvert, uv);
-        return Vec3f(Viewport * Projection * ModelView * Matrix(v));
+        UV.set_col(nthvert, Matrix({uv[0], uv[1], 1}, 3));
+        return Vec3f(Viewport * Projection * ModelView * Matrix(v, 4));
     }
     virtual bool fragment(Vec3f bar, TGAColor& color) const {
         // float total_intensity = bar * intensity;
         // color = TGAColor(255, 255, 255) * total_intensity;
-        Vec2f uv = UV * bar;
+        Matrix uv_bar = UV * Matrix(bar, 3);  // size (2, 1)
+        Vec2f uv(uv_bar[0][0], uv_bar[1][0]);
 
         Vec3f n = model->get_normmap(uv);
-        n = Vec3f(MIT * Matrix(n));
+        n = Vec3f(MIT * Matrix(n, 4));
         n.normalize();
 
-        Vec3f l = Vec3f(M * Matrix(light_dir));
+        Vec3f l = Vec3f(M * Matrix(light_dir, 4));
         l.normalize();
 
         Vec3f r = n * (n * l) * 2 - l;

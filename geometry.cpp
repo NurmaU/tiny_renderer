@@ -21,10 +21,11 @@ template <>
 template <>
 Vec3<float>::Vec3<>(const Vec3<int>& v) : x(v.x), y(v.y), z(v.z) {}
 
-Matrix::Matrix(Vec3f v)
-    : m(std::vector<std::vector<float> >(4, std::vector<float>(1, 1.f))),
-      rows(4),
+Matrix::Matrix(Vec3f v, int r)
+    : m(std::vector<std::vector<float> >(r, std::vector<float>(1, 1.f))),
+      rows(r),
       cols(1) {
+    assert(r == 3 || r == 4);
     m[0][0] = v.x;
     m[1][0] = v.y;
     m[2][0] = v.z;
@@ -124,19 +125,8 @@ std::ostream& operator<<(std::ostream& s, Matrix& m) {
     return s;
 }
 
-void Matrix::set_col(int col, Vec2f v) {
+void Matrix::set_col(int col, Matrix v) {
     for (int i = 0; i < rows; i++) {
-        m[i][col] = v[i];
+        m[i][col] = v[i][0];
     }
-}
-
-Vec2f Matrix::operator*(Vec3f v) const {
-    Vec2f retval(0, 0);
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) {
-            retval[i] += m[i][j] * v[j];
-        }
-    }
-
-    return retval;
 }

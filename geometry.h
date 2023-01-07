@@ -103,16 +103,15 @@ class Matrix {
 
    public:
     Matrix(int r = 4, int c = 4);
-    Matrix(Vec3f v);
+    Matrix(Vec3f v, int rows);
     int nrows();
     int ncols();
     static Matrix identity(int dimensions);
     std::vector<float>& operator[](const int i);
     Matrix operator*(const Matrix& a) const;
-    Vec2f operator*(Vec3f v) const;
     Matrix transpose();
     Matrix inverse();
-    void set_col(int col, Vec2f v);
+    void set_col(int col, Matrix v);
     friend std::ostream& operator<<(std::ostream& s, Matrix& m);
 };
 
